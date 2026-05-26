@@ -1,0 +1,19 @@
+<!-- StatGrid component: 4 metric cards -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6" id="stat-grid" hx-get="/api/stats?range=week" hx-trigger="load" hx-swap="innerHTML">
+    <div class="card text-center">
+        <div class="text-2xl font-bold">--</div>
+        <div class="text-xs text-[var(--text-muted)]">活跃群组</div>
+    </div>
+    <div class="card text-center">
+        <div class="text-2xl font-bold">--</div>
+        <div class="text-xs text-[var(--text-muted)]">消息总数</div>
+    </div>
+    <div class="card text-center">
+        <div class="text-2xl font-bold">--</div>
+        <div class="text-xs text-[var(--text-muted)]">@提及</div>
+    </div>
+    <div class="card text-center">
+        <div class="text-2xl font-bold">--</div>
+        <div class="text-xs text-[var(--text-muted)]">沉默群组</div>
+    </div>
+</div>

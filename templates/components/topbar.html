@@ -1,0 +1,65 @@
+<header class="topbar h-14 flex items-center px-6 gap-4">
+    <!-- Global Search -->
+    <div class="relative flex-1 max-w-md">
+        <input type="text" placeholder="搜索群组、消息、链接..."
+               name="q"
+               hx-get="/api/search"
+               hx-trigger="keyup changed delay:300ms"
+               hx-target="#search-results"
+               hx-indicator="#search-spinner"
+               class="w-full px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-sm"
+        >
+        <span id="search-spinner" class="htmx-indicator absolute right-3 top-2 text-xs">...</span>
+        <div id="search-results" class="absolute top-full mt-1 w-full bg-[var(--bg-card)] border border-[var(--border)] rounded-lg shadow-lg z-50 max-h-80 overflow-auto"></div>
+    </div>
+
+    <!-- Date Picker -->
+    <input type="date" id="date-picker"
+           class="px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-sm"
+           onchange="handleDateChange(this.value)">
+
+    <!-- Range Selector -->
+    <div class="flex rounded-lg border border-[var(--border)] overflow-hidden text-sm">
+        {% set ranges = [('day', '日'), ('week', '周'), ('month', '月')] %}
+        {% for key, label in ranges %}
+        <button class="px-3 py-2 range-btn {% if key == 'week' %}bg-[var(--accent)] text-white{% endif %}"
+                data-range="{{ key }}" onclick="handleRangeChange('{{ key }}')">{{ label }}</button>
+        {% endfor %}
+    </div>
+
+    <!-- Action Buttons -->
+    <button class="btn btn-primary text-sm" onclick="handleRescan()" id="rescan-btn">🔄 同步</button>
+    <button class="btn btn-ghost text-sm" onclick="handleFullSync()" id="fullsync-btn">📥 全量同步</button>
+
+    <div id="rescan-status" class="text-xs text-[var(--text-muted)]"></div>
+</header>
+
+<script>
+function handleDateChange(date) {
+    const url = new URL(window.location);
+    url.searchParams.set('date', date);
+    window.location = url.toString();
+}
+function handleRangeChange(range) {
+    const url = new URL(window.location);
+    url.searchParams.set('range', range);
+    window.location = url.toString();
+}
+function handleRescan() {
+    const btn = document.getElementById('rescan-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ 同步中...';
+    const status = document.getElementById('rescan-status');
+    const evtSource = new EventSource('/api/rescan?' + new URLSearchParams({range:'week'}));
+    evtSource.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        status.textContent = data.type === 'complete' ? '✅ 同步完成' : `⏳ ${data.name || ''}`;
+        if (data.type === 'complete') { evtSource.close(); btn.disabled = false; btn.textContent = '🔄 同步'; }
+    };
+    evtSource.onerror = () => { evtSource.close(); btn.disabled = false; btn.textContent = '🔄 同步'; };
+}
+function handleFullSync() {
+    // Similar to handleRescan but with full=true
+    handleRescan();
+}
+</script>

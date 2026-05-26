@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WeLink Radar — 链接情报</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+<link rel="stylesheet" href="/static/css/style.css">
+<style>
+:root{--bg:#faf9f6;--bg-card:#fff;--bg-sidebar:#f5f4f1;--text:#1a1a1a;--text-muted:#6b7280;--border:#e5e7eb;--accent:#6366f1}
+[data-theme=dark]{--bg:#1a1a2e;--bg-card:#16213e;--bg-sidebar:#0f3460;--text:#e0e0e0;--text-muted:#9ca3af;--border:#374151;--accent:#818cf8}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem}
+.btn{padding:.5rem 1rem;border-radius:8px;font-weight:500;cursor:pointer;border:none}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+.sidebar{background:var(--bg-sidebar);border-right:1px solid var(--border)}
+.topbar{background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.5rem;height:3.5rem}
+</style>
+</head>
+<body class="min-h-screen flex">
+{% include "components/sidebar.html" %}
+<div class="flex-1 flex flex-col min-h-screen">
+<header class="topbar gap-4"><h2 class="font-semibold">🔗 链接情报</h2>
+<input type="date" id="links-date" class="px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-sm" onchange="refreshLinks(this.value)">
+<button class="btn btn-ghost text-sm" onclick="refreshLinks()">🔄 刷新分析</button></header>
+<main class="flex-1 p-6 overflow-auto">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="links-content" hx-get="/api/topics/links" hx-trigger="load" hx-swap="innerHTML">
+<div class="card"><h3 class="font-semibold mb-3 text-blue-600">📄 文章链接</h3><div class="space-y-2 text-sm"></div></div>
+<div class="card"><h3 class="font-semibold mb-3 text-green-600">🛠️ 工具/资源</h3><div class="space-y-2 text-sm"></div></div>
+</div>
+<script>
+function refreshLinks(date) {
+const params = new URLSearchParams(); if(date) params.set('date', date); params.set('refresh', '1');
+htmx.ajax('GET', '/api/topics/links?' + params.toString(), '#links-content');
+}
+</script>
+</main></div>
+</body></html>

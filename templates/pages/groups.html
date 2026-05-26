@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WeLink Radar — 群组列表</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+<link rel="stylesheet" href="/static/css/style.css">
+<style>
+:root{--bg:#faf9f6;--bg-card:#fff;--bg-sidebar:#f5f4f1;--text:#1a1a1a;--text-muted:#6b7280;--border:#e5e7eb;--accent:#6366f1;--accent-hover:#4f46e5}
+[data-theme=dark]{--bg:#1a1a2e;--bg-card:#16213e;--bg-sidebar:#0f3460;--text:#e0e0e0;--text-muted:#9ca3af;--border:#374151;--accent:#818cf8;--accent-hover:#6366f1}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem}
+.btn{padding:.5rem 1rem;border-radius:8px;font-weight:500;cursor:pointer;border:none;transition:.2s}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent-hover)}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+.sidebar{background:var(--bg-sidebar);border-right:1px solid var(--border)}
+.topbar{background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.5rem;height:3.5rem}
+</style>
+</head>
+<body class="min-h-screen flex">
+{% include "components/sidebar.html" %}
+<div class="flex-1 flex flex-col min-h-screen">
+<header class="topbar gap-4">
+<input type="text" placeholder="搜索群组..." hx-get="/api/search" hx-trigger="keyup changed delay:200ms" hx-target="#groups-list"
+       class="px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-sm w-64">
+<div class="flex gap-2 text-sm">
+<a href="/groups?filter=all" class="px-3 py-1.5 rounded-lg hover:bg-[var(--border)] no-underline text-[var(--text)]">全部</a>
+<a href="/groups?filter=favorites" class="px-3 py-1.5 rounded-lg hover:bg-[var(--border)] no-underline text-[var(--text)]">⭐ 收藏</a>
+<a href="/groups?filter=unsorted" class="px-3 py-1.5 rounded-lg hover:bg-[var(--border)] no-underline text-[var(--text)]">📋 未分类</a>
+<a href="/classify" class="px-3 py-1.5 rounded-lg hover:bg-[var(--border)] no-underline text-[var(--text)]">🤖 AI 分类</a>
+</div>
+</header>
+<main class="flex-1 p-6 overflow-auto">
+<div id="groups-list" hx-get="/api/sessions" hx-trigger="load" hx-swap="innerHTML">
+<div class="text-sm text-[var(--text-muted)]">加载群组列表...</div>
+</div>
+</main>
+</div>
+</body>
+</html>

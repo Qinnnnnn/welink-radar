@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeLink Radar — 初始设置</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        :root {
+            --bg: #faf9f6; --bg-card: #ffffff; --text: #1a1a1a;
+            --text-muted: #6b7280; --border: #e5e7eb;
+            --accent: #6366f1; --accent-hover: #4f46e5;
+        }
+        [data-theme="dark"] {
+            --bg: #1a1a2e; --bg-card: #16213e; --text: #e0e0e0;
+            --text-muted: #9ca3af; --border: #374151;
+            --accent: #818cf8; --accent-hover: #6366f1;
+        }
+        body { background-color: var(--bg); color: var(--text);
+               font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .card { background: var(--bg-card); border: 1px solid var(--border);
+                border-radius: 12px; padding: 1rem; }
+        .btn { padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500;
+               cursor: pointer; border: none; transition: all 0.2s; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+    </style>
+</head>
+<body class="min-h-screen">
+<div class="max-w-lg mx-auto mt-20 p-8">
+    <h1 class="text-2xl font-bold mb-2">📡 Welcome to WeLink Radar</h1>
+    <p class="text-[var(--text-muted)] mb-8">本地优先的 WeLink 群聊情报看板</p>
+
+    <div class="card mb-6" id="env-checks" hx-get="/api/setup" hx-trigger="load" hx-swap="innerHTML">
+        <div class="text-sm">⏳ 检查环境...</div>
+    </div>
+
+    <form hx-post="/api/setup" hx-swap="outerHTML" class="card space-y-4">
+        <div>
+            <label class="block text-sm font-medium mb-1">你的 WeLink 名称（逗号分隔，用于 @提及识别）</label>
+            <input name="myNicknames" type="text" placeholder="张三, San Zhang, zhangsan"
+                   class="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-sm">
+            <p class="text-xs text-[var(--text-muted)] mt-1">用于识别群聊中 @你的消息</p>
+        </div>
+        <div>
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="demoMode" value="1" class="rounded">
+                启用 Demo 模式（使用模拟数据体验功能）
+            </label>
+        </div>
+        <div>
+            <label class="block text-sm font-medium mb-1">默认同步天数</label>
+            <input name="defaultSyncDays" type="number" value="90" min="1" max="365"
+                   class="w-32 px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-sm">
+        </div>
+        <hr class="border-[var(--border)]">
+        <label class="flex items-start gap-2 text-sm">
+            <input type="checkbox" name="privacyConfirmed" value="1" required class="mt-0.5 rounded">
+            <span>我已阅读并同意隐私说明。所有聊天数据仅存储在本地 SQLite 数据库，不会上传到任何第三方服务。</span>
+        </label>
+        <button type="submit" class="btn btn-primary w-full">🚀 开始使用</button>
+    </form>
+</div>
+</body>
+</html>

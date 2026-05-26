@@ -1,0 +1,30 @@
+<!-- TrendChart: message volume trend line chart -->
+<div class="card mb-6">
+    <h3 class="font-semibold mb-3">📈 消息趋势</h3>
+    <div id="trend-chart" style="height: 250px;"></div>
+    <script>
+    (function() {
+        const el = document.getElementById('trend-chart');
+        if (!el) return;
+        // Fetch data via HTMX or inline
+        fetch('/api/stats?range=week')
+            .then(r => r.json())
+            .then(data => {
+                const chart = echarts.init(el);
+                chart.setOption({
+                    tooltip: { trigger: 'axis' },
+                    xAxis: { type: 'category', data: data.trend.map(t => t.date.slice(5)) },
+                    yAxis: { type: 'value' },
+                    series: [{
+                        data: data.trend.map(t => t.total),
+                        type: 'line',
+                        smooth: true,
+                        areaStyle: { opacity: 0.15 },
+                        itemStyle: { color: '#6366f1' },
+                    }],
+                    grid: { left: 40, right: 20, top: 10, bottom: 30 },
+                });
+            });
+    })();
+    </script>
+</div>

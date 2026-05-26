@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# UV / virtual environment
+.venv/
+uv.lock
+
+# IDE
+.vscode/
+.idea/
+.claude/
+.opencode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project data
+*.db
+~/.welink-radar/

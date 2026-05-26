@@ -1,0 +1,53 @@
+<aside class="sidebar w-64 min-h-screen p-4 flex flex-col gap-4" x-data="{ filter: 'all' }">
+    <a href="/" class="text-xl font-bold text-indigo-500 no-underline">📡 WeLink Radar</a>
+
+    <nav class="flex flex-col gap-1">
+        <a href="/" class="px-3 py-2 rounded-lg hover:bg-white/10 no-underline text-[var(--text)]">🏠 仪表盘</a>
+        <a href="/topics" class="px-3 py-2 rounded-lg hover:bg-white/10 no-underline text-[var(--text)]">🎯 话题雷达</a>
+        <a href="/links" class="px-3 py-2 rounded-lg hover:bg-white/10 no-underline text-[var(--text)]">🔗 链接情报</a>
+        <a href="/mentions" class="px-3 py-2 rounded-lg hover:bg-white/10 no-underline text-[var(--text)]">💬 @我的</a>
+        <a href="/signals" class="px-3 py-2 rounded-lg hover:bg-white/10 no-underline text-[var(--text)]">📶 实时信号</a>
+    </nav>
+
+    <hr class="border-[var(--border)]">
+
+    <div class="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">群组分类</div>
+
+    <div class="flex flex-col gap-1" x-data>
+        <button @click="filter='all'; $dispatch('filter-change', 'all')"
+                class="px-3 py-1.5 rounded-lg text-left text-sm hover:bg-white/10">全部</button>
+        <button @click="filter='favorites'; $dispatch('filter-change', 'favorites')"
+                class="px-3 py-1.5 rounded-lg text-left text-sm hover:bg-white/10">⭐ 收藏</button>
+        <button @click="filter='unsorted'; $dispatch('filter-change', 'unsorted')"
+                class="px-3 py-1.5 rounded-lg text-left text-sm hover:bg-white/10">📋 未分类</button>
+        <div id="sidebar-categories" hx-get="/api/sessions" hx-trigger="load" hx-swap="innerHTML">
+            <!-- Categories loaded dynamically -->
+        </div>
+    </div>
+
+    <div class="mt-auto pt-4 border-t border-[var(--border)]">
+        <div id="daemon-status" hx-get="/api/daemon" hx-trigger="load, every 60s" hx-swap="innerHTML"
+             class="text-xs text-[var(--text-muted)]">
+            ⏳ 检查状态...
+        </div>
+        <div class="flex justify-between items-center mt-2">
+            <a href="/setup" class="text-xs text-[var(--text-muted)] hover:text-[var(--text)]">⚙️ 设置</a>
+            <button onclick="toggleTheme()" class="text-sm px-2 py-1 rounded" aria-label="切换主题">🌓</button>
+        </div>
+    </div>
+</aside>
+
+<script>
+function toggleTheme() {
+    const html = document.documentElement;
+    const current = html.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+}
+// Restore theme
+(function() {
+    const saved = localStorage.getItem('theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+})();
+</script>

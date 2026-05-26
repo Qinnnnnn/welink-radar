@@ -1,0 +1,7 @@
+<!-- ActiveGroupsList: most active groups ranking -->
+<div class="card mb-6">
+    <h3 class="font-semibold mb-3">🔥 活跃群组排行</h3>
+    <div id="active-groups" hx-get="/api/stats?range=week" hx-trigger="load from:body" hx-swap="innerHTML">
+        <div class="text-sm text-[var(--text-muted)]">加载中...</div>
+    </div>
+</div>
