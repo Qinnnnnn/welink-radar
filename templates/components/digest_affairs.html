@@ -1,0 +1,129 @@
+<!-- DigestAffairs: AI-powered topic/affair analysis -->
+<div id="digest-affairs">
+    <div class="flex items-center gap-2 mb-4">
+        <span class="text-lg">🤖</span>
+        <h2 class="text-base font-semibold" style="color: #3D3648">AI 今日事务分析</h2>
+        <span class="text-xs px-2 py-0.5 rounded-full" style="background: #EDE8E2; color: #8B8294">nga powered</span>
+    </div>
+
+    <!-- Topics section -->
+    {% if ai_analysis.topics %}
+    <div class="mb-5">
+        <h3 class="text-xs font-semibold uppercase tracking-wider mb-3" style="color: #8B8294">📌 今日话题</h3>
+        <div class="flex flex-wrap gap-2">
+            {% for t in ai_analysis.topics %}
+            <span class="topic-tag cursor-pointer"
+                  onclick="showDetailModal('{{ t.title | e }}', '涉及 {{ t.group_count }} 个群 · {{ t.message_count }} 条消息', '<p>{{ t.summary | e }}</p>')"
+                  style="background: #F3F0EC; color: #5D5668; border: 1px solid #E8E3DB;
+                         padding: 0.4rem 0.85rem; border-radius: 20px; font-size: 0.8rem;
+                         transition: all 0.2s;">
+                {{ t.title }}
+                <span style="color: #B0A8B8; font-size: 0.7rem;">×{{ t.message_count }}</span>
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Unclosed items — HIGH priority section -->
+    {% if ai_analysis.unclosed %}
+    <div class="mb-5">
+        <div class="flex items-center gap-2 mb-3">
+            <span class="text-sm">🔴</span>
+            <h3 class="text-xs font-semibold uppercase tracking-wider" style="color: #C49B95">未闭环事务 · 需跟进</h3>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background: #F5E8E5; color: #C49B95">{{ ai_analysis.unclosed|length }}</span>
+        </div>
+        <div class="space-y-2">
+            {% for item in ai_analysis.unclosed %}
+            <div class="unclosed-card cursor-pointer"
+                 onclick="showDetailModal('{{ item.title | e }}', '风险: {{ item.risk }} · 来源: {{ item.source_group }}', '<div style=\'line-height:1.7\'><p><b>原因:</b> {{ item.reason | e }}</p><p><b>关键人:</b> {{ item.key_person | e }}</p><p><b>来源:</b> {{ item.source_group | e }}</p><p style=\'margin-top:0.5rem\'>{{ item.detail | e }}</p></div>')">
+                <div class="flex items-start gap-3">
+                    <!-- Risk badge -->
+                    <div class="risk-badge flex-shrink-0"
+                         style="{% if item.risk == '高' %}
+                                background: #F5E8E5; color: #C49B95;
+                                {% elif item.risk == '中' %}
+                                background: #F5EFE8; color: #C4B098;
+                                {% else %}
+                                background: #E8EDE8; color: #9DB4A3;
+                                {% endif %}
+                                width: 36px; height: 36px; border-radius: 10px;
+                                display: flex; align-items: center; justify-content: center;
+                                font-size: 0.7rem; font-weight: 600;">
+                        {{ item.risk }}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-sm font-medium" style="color: #3D3648">{{ item.title }}</span>
+                            <span class="text-xs px-1.5 py-0.5 rounded" style="background: #EDE8E2; color: #8B8294">{{ item.source_group }}</span>
+                        </div>
+                        <p class="text-xs leading-relaxed" style="color: #8B8294">{{ item.detail[:80] }}{% if item.detail|length > 80 %}...{% endif %}</p>
+                        {% if item.key_person and item.key_person != '待确认' %}
+                        <div class="flex items-center gap-1 mt-1.5">
+                            <span class="text-xs" style="color: #B0A8B8">关键人:</span>
+                            <span class="text-xs font-medium" style="color: #5D5668">{{ item.key_person }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Closed items -->
+    {% if ai_analysis.closed %}
+    <div>
+        <div class="flex items-center gap-2 mb-3">
+            <span class="text-sm">🟢</span>
+            <h3 class="text-xs font-semibold uppercase tracking-wider" style="color: #9DB4A3">已闭环</h3>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background: #E8EDE8; color: #9DB4A3">{{ ai_analysis.closed|length }}</span>
+        </div>
+        <div class="space-y-1.5">
+            {% for item in ai_analysis.closed %}
+            <div class="closed-card cursor-pointer"
+                 onclick="showDetailModal('{{ item.title | e }}', '{{ item.source_group }}', '<p>{{ item.conclusion | e }}</p>')"
+                 style="display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 0.75rem;
+                        border-radius: 8px; font-size: 0.8rem; color: #5D5668;
+                        transition: background 0.15s;
+                        border: 1px solid transparent;">
+                <span style="color: #9DB4A3">✓</span>
+                <span style="flex:1">{{ item.title }}</span>
+                <span style="color: #B0A8B8; font-size: 0.7rem;">{{ item.source_group }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not ai_analysis.topics and not ai_analysis.unclosed and not ai_analysis.closed %}
+    <div class="text-center py-8" style="color: #B0A8B8">
+        <div class="text-4xl mb-2">📭</div>
+        <p class="text-sm">AI 分析暂未生成</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.topic-tag:hover {
+    background: #E8E3DB !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(61, 54, 72, 0.06);
+}
+.unclosed-card {
+    background: #FFFFFF;
+    border: 1px solid #E8E3DB;
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    transition: all 0.2s ease;
+}
+.unclosed-card:hover {
+    box-shadow: 0 4px 12px rgba(196, 155, 149, 0.1);
+    border-color: #E0D0CD;
+}
+.closed-card:hover {
+    background: #F8F7F4;
+    border-color: #E8E3DB;
+}
+</style>

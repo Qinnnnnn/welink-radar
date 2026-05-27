@@ -1,20 +1,11 @@
 """Setup wizard routes — initial configuration."""
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Form
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 
-from core.config import config_status, write_config, ConfigModel
-from models.schemas import ConfigModel as ConfigSchema
+from core.config import config_status, write_config
 
 router = APIRouter(prefix="/api/setup", tags=["setup"])
-
-
-class SetupPayload(BaseModel):
-    myNicknames: list[str] = []
-    privacyConfirmed: bool = False
-    demoMode: bool = False
-    defaultSyncDays: int = 90
 
 
 @router.get("")
@@ -25,22 +16,18 @@ async def get_setup():
 
 
 @router.post("")
-async def post_setup(payload: SetupPayload):
-    """Save configuration and optionally seed demo data."""
-    config = write_config({
-        "myNicknames": payload.myNicknames,
-        "privacyConfirmed": payload.privacyConfirmed,
+async def post_setup(myNicknames: str = Form(default="")):
+    """Save configuration and redirect to digest page."""
+    nicknames = [n.strip() for n in myNicknames.split(",") if n.strip()] if myNicknames else []
+
+    write_config({
+        "myNicknames": nicknames,
+        "privacyConfirmed": True,
         "setupCompleted": True,
-        "demoMode": payload.demoMode,
-        "defaultSyncDays": payload.defaultSyncDays,
+        "demoMode": False,
     })
 
-    result = {"ok": True, "configured": True, "config": config.model_dump()}
-
-    # Seed demo data if requested
-    if payload.demoMode:
-        from scripts.seed_demo import seed_demo_data
-        seed_demo_data()
-        result["demo"] = "seeded"
-
-    return result
+    return JSONResponse(
+        content={"ok": True},
+        headers={"HX-Redirect": "/digest"},
+    )

@@ -68,12 +68,26 @@ def config_status() -> dict:
 
 
 def _check_welink_cli() -> bool:
-    """Check if welink-cli is available (mocked for local dev)."""
-    import shutil
-    return shutil.which("welink-cli") is not None
+    """Check if welink-cli is installed by running --version."""
+    import subprocess
+    try:
+        result = subprocess.run(
+            ["welink-cli", "--version"],
+            capture_output=True, text=True, timeout=10
+        )
+        return result.returncode == 0
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
 
 
 def _check_nga() -> bool:
-    """Check if nga CLI is available (mocked for local dev)."""
-    import shutil
-    return shutil.which("nga") is not None
+    """Check if nga is installed by running --version."""
+    import subprocess
+    try:
+        result = subprocess.run(
+            ["nga", "--version"],
+            capture_output=True, text=True, timeout=10
+        )
+        return result.returncode == 0
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False

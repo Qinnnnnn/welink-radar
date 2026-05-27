@@ -1,0 +1,140 @@
+<style>
+    :root {
+        --bg: #F8FAFC;
+        --card: #FFFFFF;
+        --sidebar: #FFFFFF;
+        --text: #1E293B;
+        --muted: #64748B;
+        --border: #DDE1E6;
+        --accent: #5B6AF0;
+        --accent-hover: #4A56D4;
+        --success: #22A699;
+        --danger: #E85D5D;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        height: 100vh;
+        display: flex;
+        overflow: hidden;
+    }
+    .sidebar {
+        background: var(--sidebar);
+        width: 220px;
+        height: 100vh;
+        padding: 1.5rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        flex-shrink: 0;
+        overflow: hidden;
+        border-right: 1px solid var(--border);
+    }
+    .sidebar-logo {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #4338CA;
+        text-decoration: none;
+        padding: 0.25rem 0.5rem;
+        display: block;
+    }
+    .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+    .sidebar a.nav-item {
+        color: var(--text);
+        text-decoration: none;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        display: block;
+        transition: background 0.15s;
+    }
+    .sidebar a.nav-item:hover { background: #F1F4F8; }
+    .sidebar a.nav-item.active {
+        background: #EEF2FF;
+        color: #4338CA;
+        font-weight: 600;
+    }
+    .sidebar-hr {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 0.25rem 0;
+    }
+    .main-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+    .topbar {
+        background: var(--card);
+        border-bottom: 1px solid var(--border);
+        padding: 0.7rem 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        flex-shrink: 0;
+        font-size: 0.82rem;
+        color: var(--muted);
+    }
+    .topbar .topbar-root {
+        color: var(--text);
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .topbar .topbar-sep {
+        color: #CBD5E1;
+        user-select: none;
+    }
+    .topbar .topbar-current {
+        color: var(--text);
+    }
+    .content {
+        flex: 1;
+        padding: 2rem;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .card {
+        background: var(--card);
+        border-radius: 14px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .btn {
+        padding: 0.55rem 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        cursor: pointer;
+        border: none;
+        transition: background 0.15s;
+    }
+    .btn-primary {
+        background: var(--accent);
+        color: #FFFFFF;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    input[type="text"] {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.55rem 0.8rem;
+        font-size: 0.85rem;
+        color: var(--text);
+        width: 100%;
+        outline: none;
+        transition: border-color 0.15s;
+    }
+    input[type="text"]:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(91, 106, 240, 0.12);
+    }
+    input[type="text"]::placeholder { color: #94A3B8; }
+</style>

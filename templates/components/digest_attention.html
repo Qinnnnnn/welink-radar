@@ -1,0 +1,97 @@
+<!-- DigestAttention: strong + weak @mentions -->
+<div id="digest-attention" class="mb-6">
+    <!-- Strong reminders (@me) -->
+    {% if attention.strong %}
+    <div class="mb-5">
+        <div class="flex items-center gap-2 mb-3">
+            <span class="w-2 h-2 rounded-full" style="background: #C49B95"></span>
+            <h3 class="text-sm font-semibold" style="color: #3D3648">🔴 强提醒 · @你</h3>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background: #F5E8E5; color: #C49B95">{{ attention.strong|length }}</span>
+        </div>
+        <div class="space-y-2">
+            {% for m in attention.strong %}
+            <div class="attention-card attention-strong cursor-pointer"
+                 onclick="showDetailModal('@提及详情', '{{ m.conv_name }}', '<p><b>发送者:</b> {{ m.sender }}</p><p><b>时间:</b> {{ m.time }}</p><p><b>内容:</b> {{ m.content | e }}</p>')">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0"
+                         style="background: #F5E8E5; color: #C49B95">
+                        {{ m.sender[0] | upper }}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <span class="text-xs font-medium" style="color: #3D3648">{{ m.sender }}</span>
+                            <span class="text-xs px-1.5 py-0.5 rounded" style="background: #EDE8E2; color: #8B8294">
+                                {{ '👤' if m.conv_type == 'private' else '👥' }} {{ m.conv_name }}
+                            </span>
+                            <span class="text-xs ml-auto flex-shrink-0" style="color: #B0A8B8">{{ m.time }}</span>
+                        </div>
+                        <p class="text-sm leading-relaxed truncate" style="color: #5D5668">{{ m.content }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Weak reminders (@all) -->
+    {% if attention.weak %}
+    <div>
+        <div class="flex items-center gap-2 mb-3">
+            <span class="w-2 h-2 rounded-full" style="background: #C4B098"></span>
+            <h3 class="text-sm font-semibold" style="color: #3D3648">🟡 弱提醒 · @所有人</h3>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background: #F5EFE8; color: #C4B098">{{ attention.weak|length }}</span>
+        </div>
+        <div class="space-y-2">
+            {% for m in attention.weak %}
+            <div class="attention-card attention-weak cursor-pointer"
+                 onclick="showDetailModal('@所有人详情', '{{ m.conv_name }}', '<p><b>发送者:</b> {{ m.sender }}</p><p><b>时间:</b> {{ m.time }}</p><p><b>内容:</b> {{ m.content | e }}</p>')">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0"
+                         style="background: #F5EFE8; color: #C4B098">
+                        {{ m.sender[0] | upper }}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <span class="text-xs font-medium" style="color: #3D3648">{{ m.sender }}</span>
+                            <span class="text-xs px-1.5 py-0.5 rounded" style="background: #EDE8E2; color: #8B8294">
+                                👥 {{ m.conv_name }}
+                            </span>
+                            <span class="text-xs ml-auto flex-shrink-0" style="color: #B0A8B8">{{ m.time }}</span>
+                        </div>
+                        <p class="text-sm leading-relaxed truncate" style="color: #5D5668">{{ m.content }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not attention.strong and not attention.weak %}
+    <div class="text-center py-8" style="color: #B0A8B8">
+        <div class="text-4xl mb-2">✨</div>
+        <p class="text-sm">今日没有需要关注的提醒</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.attention-card {
+    background: #FFFFFF;
+    border: 1px solid #E8E3DB;
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    transition: all 0.2s ease;
+}
+.attention-card:hover {
+    box-shadow: 0 4px 12px rgba(61, 54, 72, 0.06);
+    border-color: #D4CCE0;
+}
+.attention-strong {
+    border-left: 3px solid #C49B95;
+}
+.attention-weak {
+    border-left: 3px solid #C4B098;
+}
+</style>

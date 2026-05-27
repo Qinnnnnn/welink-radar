@@ -1,0 +1,61 @@
+<!-- DigestOverview: 4 stat cards -->
+<div id="digest-overview" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="digest-stat-card cursor-pointer"
+         onclick="showDetailModal('私聊会话', '今日活跃的私聊对话', '{{ overview.private_chats }} 个私聊会话在今天有消息往来')">
+        <div class="text-3xl font-semibold" style="color: #A098A8">{{ overview.private_chats }}</div>
+        <div class="text-xs mt-1" style="color: #8B8294">私聊会话</div>
+        <div class="stat-icon mt-2">💬</div>
+    </div>
+    <div class="digest-stat-card cursor-pointer"
+         onclick="showDetailModal('群聊会话', '今日活跃的群聊', '{{ overview.group_chats }} 个群聊在今天有消息')">
+        <div class="text-3xl font-semibold" style="color: #9DB4A3">{{ overview.group_chats }}</div>
+        <div class="text-xs mt-1" style="color: #8B8294">群聊会话</div>
+        <div class="stat-icon mt-2">👥</div>
+    </div>
+    <div class="digest-stat-card cursor-pointer"
+         onclick="showDetailModal('消息总量', '今日所有会话的消息总数', '{{ overview.total_messages }} 条消息，覆盖私聊与群聊')">
+        <div class="text-3xl font-semibold" style="color: #9AACB8">{{ overview.total_messages }}</div>
+        <div class="text-xs mt-1" style="color: #8B8294">消息总数</div>
+        <div class="stat-icon mt-2">📨</div>
+    </div>
+    <div class="digest-stat-card cursor-pointer"
+         onclick="showDetailModal('需关注', '强提醒 + 弱提醒总数', '{{ overview.attention_count }} 条消息需要你关注（强提醒 {{ overview.strong_count }} 条，弱提醒 {{ overview.weak_count }} 条）')">
+        <div class="text-3xl font-semibold" style="color: {{ '#C49B95' if overview.attention_count > 0 else '#9DB4A3' }}">{{ overview.attention_count }}</div>
+        <div class="text-xs mt-1" style="color: #8B8294">需关注</div>
+        <div class="stat-icon mt-2">🔔</div>
+    </div>
+</div>
+
+<style>
+.digest-stat-card {
+    background: #FFFFFF;
+    border: 1px solid #E8E3DB;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+.digest-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #C4B8D4 0%, #A098A8 100%);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+.digest-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(61, 54, 72, 0.08);
+    border-color: #D4CCE0;
+}
+.digest-stat-card:hover::before {
+    opacity: 1;
+}
+.stat-icon {
+    font-size: 1.5rem;
+    opacity: 0.6;
+}
+</style>

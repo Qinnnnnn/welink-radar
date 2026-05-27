@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日摘要 · WeLink Radar</title>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    {% include "components/shared_layout.html" %}
+    <style>
+        .topbar { justify-content: space-between; }
+        .digest-layout { max-width:1200px; margin:0 auto; display:grid; grid-template-columns:1fr; gap:1.5rem; }
+        @media (min-width:1200px) {
+            .digest-layout { grid-template-columns:1fr 380px; }
+            .digest-left-col { max-height:calc(100vh - 5.5rem); overflow-y:auto; padding-right:0.25rem; }
+            .digest-left-col .digest-metrics-sticky { position:sticky; top:0; z-index:1; background:#F8FAFC; padding-bottom:0.5rem; }
+            .digest-analysis-col { max-height:calc(100vh - 5.5rem); overflow-y:auto; }
+        }
+        .section-title { font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); margin-bottom:0.75rem; }
+        .digest-stat-card { background:#FFF; border-radius:14px; padding:1.3rem 1.5rem; cursor:default; box-shadow:0 1px 2px rgba(0,0,0,0.04); }
+        .modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.3); backdrop-filter:blur(4px); z-index:1000; align-items:center; justify-content:center; }
+        .modal-overlay.active { display:flex; }
+        .modal-card { background:#FFF; border-radius:16px; padding:1.75rem 2rem; max-width:520px; width:90%; box-shadow:0 16px 48px rgba(15,23,42,0.12); animation:modalIn 0.25s ease; }
+        @keyframes modalIn { from{opacity:0;transform:translateY(12px) scale(0.97);} to{opacity:1;transform:translateY(0) scale(1);} }
+        .modal-card h3 { font-size:1rem; font-weight:600; color:var(--text); margin-bottom:0.35rem; }
+        .modal-subtitle { font-size:0.8rem; color:var(--muted); margin-bottom:1rem; }
+        .modal-body { font-size:0.875rem; color:#475569; line-height:1.7; }
+        .modal-close { float:right; background:var(--bg); border:none; width:32px; height:32px; border-radius:50%; font-size:0.9rem; cursor:pointer; color:var(--muted); display:flex; align-items:center; justify-content:center; }
+        .modal-close:hover { background:#E2E8F0; color:var(--text); }
+        @keyframes fadeSlideIn { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
+        .animate-in { animation:fadeSlideIn 0.4s ease forwards; }
+        .animate-in-d1 { animation-delay:0.05s; opacity:0; }
+        .animate-in-d2 { animation-delay:0.12s; opacity:0; }
+    </style>
+</head>
+<body>
+    {% with page="digest" %}{% include "components/sidebar_minimal.html" %}{% endwith %}
+
+    <div class="main-area">
+        <div class="topbar">
+            <a href="/digest" class="topbar-root">WeLink Radar</a>
+            <span class="topbar-sep">/</span>
+            <span class="topbar-current">每日摘要</span>
+            <span style="margin-left:auto;font-size:0.78rem;color:var(--muted);" id="digest-date"></span>
+        </div>
+
+        <div class="content" id="digest-content">
+            <div class="digest-layout">
+                <div class="digest-left-col">
+                    <div id="digest-overview-area" hx-get="/api/digest/overview" hx-trigger="load" hx-swap="innerHTML"></div>
+                </div>
+                <div class="digest-analysis-col">
+                    <div id="digest-analysis-loaded" hx-get="/api/digest/analysis" hx-trigger="load" hx-swap="innerHTML"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="detailModal" onclick="if(event.target===this)closeModal()">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h3 id="modalTitle"></h3>
+            <div class="modal-subtitle" id="modalSubtitle"></div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+    function showDetailModal(t,s,b){document.getElementById('modalTitle').textContent=t;document.getElementById('modalSubtitle').textContent=s;document.getElementById('modalBody').innerHTML=b;document.getElementById('detailModal').classList.add('active');}
+    function closeModal(){document.getElementById('detailModal').classList.remove('active');}
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
+
+    function escHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+    function buildStatCard(label,value,color){
+        return '<div class="digest-stat-card"><div style="font-size:2.25rem;font-weight:700;color:'+color+';letter-spacing:-0.03em;line-height:1;">'+value+'</div><div style="font-size:0.75rem;color:#94A3B8;margin-top:0.4rem;font-weight:500;">'+label+'</div></div>';
+    }
+
+    function buildAttentionItem(m,type){
+        var strong=type==='strong';
+        var lc=strong?'#F87171':'#FBBF24';
+        var gs=strong?'#FEE2E2':'#FEF3C7';
+        var ge=strong?'#FECACA':'#FDE68A';
+        var ini=(m.sender||'?')[0].toUpperCase();
+        var c=escHtml(m.content||'');
+        var mid='am-'+Math.random().toString(36).slice(2,8);
+        return '<div style="display:flex;align-items:flex-start;gap:0.75rem;background:#FFF;border-left:3px solid '+lc+';padding:0.85rem 1rem;margin-bottom:0.35rem;transition:all 0.15s;border-radius:0 10px 10px 0;" onmouseover="this.style.background=\'#FAFBFC\';this.style.borderLeftWidth=\'4px\'" onmouseout="this.style.background=\'#FFF\';this.style.borderLeftWidth=\'3px\'">'+
+        '<div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,'+gs+','+ge+');color:'+lc+';display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;flex-shrink:0;">'+ini+'</div>'+
+        '<div style="min-width:0;flex:1;">'+
+        '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">'+
+        '<span style="font-size:0.81rem;font-weight:400;color:#64748B;">'+escHtml(m.sender||'')+'</span>'+
+        '<span style="font-size:0.67rem;padding:0.12rem 0.45rem;border-radius:4px;background:#F1F5F9;color:#475569;font-weight:500;">'+escHtml(m.conv_name||'')+'</span>'+
+        '<span style="margin-left:auto;font-size:0.7rem;color:#94A3B8;flex-shrink:0;">'+escHtml(m.time||'')+'</span></div>'+
+        '<div id="'+mid+'" style="font-size:0.875rem;font-weight:500;color:#1E293B;line-height:1.5;word-break:break-word;"><span class="msg-text">'+c+'</span></div></div></div>';
+    }
+
+    function processMsgText(){
+        document.querySelectorAll('.msg-text').forEach(function(el){
+            var lh=1.5*14;
+            if(el.scrollHeight>lh*3.5){
+                el.style.maxHeight=(lh*3)+'px';el.style.overflow='hidden';
+                var btn=document.createElement('span');
+                btn.textContent='展开';btn.style.cssText='color:#5B6AF0;font-size:0.75rem;cursor:pointer;font-weight:500;margin-top:0.15rem;display:inline-block;';
+                btn.onclick=function(e){e.stopPropagation();
+                    if(el.style.maxHeight==='none'){el.style.maxHeight=(lh*3)+'px';btn.textContent='展开';}
+                    else{el.style.maxHeight='none';btn.textContent='收起';}
+                };
+                el.parentNode.appendChild(btn);
+            }
+        });
+    }
+
+    function markTaskDone(id){
+        var el=document.getElementById(id);if(!el)return;
+        el.style.opacity='0.5';el.style.textDecoration='line-through';el.style.transition='all 0.3s';
+        el.querySelector('.task-actions').innerHTML='<span style="color:#059669;font-size:0.72rem;font-weight:500;">已处理</span>';
+    }
+    function dismissTask(id){
+        var el=document.getElementById(id);if(!el)return;
+        el.style.opacity='0';el.style.transform='translateX(24px)';el.style.transition='all 0.3s';
+        setTimeout(function(){el.style.display='none';},300);
+    }
+
+    // ── Render overview ──
+    document.addEventListener('htmx:afterOnLoad',function(evt){
+        if(evt.detail.target.id!=='digest-overview-area')return;
+        try{var d=JSON.parse(evt.detail.xhr.responseText);renderOverview(d);}catch(e){}
+    });
+    function renderOverview(data){
+        var c=document.getElementById('digest-overview-area');
+        var ov=data.overview||{},att=data.attention||{};
+        document.getElementById('digest-date').textContent=data.date||'';
+        var h='<div class="digest-metrics-sticky">';
+        h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-bottom:1.5rem;" class="animate-in">';
+        h+=buildStatCard('私聊会话',ov.private_chats||0,'#5B6AF0');
+        h+=buildStatCard('群聊会话',ov.group_chats||0,'#22A699');
+        h+=buildStatCard('消息总数',ov.total_messages||0,'#5B6AF0');
+        h+='</div></div>';
+        h+='<div class="card animate-in animate-in-d1" style="margin-bottom:1.5rem;">';
+        h+='<div class="section-title">需要你关注</div>';
+        if(att.strong&&att.strong.length>0){
+            h+='<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;"><span style="width:8px;height:8px;border-radius:50%;background:#F87171;"></span><span style="font-size:0.8rem;font-weight:600;color:#1E293B;">强提醒 &middot; @你</span><span style="font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:999px;background:#FEF2F2;color:#DC2626;">'+att.strong.length+'</span></div>';
+            att.strong.forEach(function(m){h+=buildAttentionItem(m,'strong');});
+        }
+        if(att.weak&&att.weak.length>0){
+            h+='<div style="display:flex;align-items:center;gap:0.5rem;margin:1rem 0 0.75rem;"><span style="width:8px;height:8px;border-radius:50%;background:#FBBF24;"></span><span style="font-size:0.8rem;font-weight:600;color:#1E293B;">弱提醒 &middot; @所有人</span><span style="font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:999px;background:#FFFBEB;color:#D97706;">'+att.weak.length+'</span></div>';
+            att.weak.forEach(function(m){h+=buildAttentionItem(m,'weak');});
+        }
+        if((!att.strong||att.strong.length===0)&&(!att.weak||att.weak.length===0)){
+            h+='<div style="text-align:center;padding:1.5rem;color:#94A3B8;">今日没有需要关注的提醒</div>';
+        }
+        h+='</div>';
+        c.innerHTML=h;
+        setTimeout(processMsgText,50);
+    }
+
+    // ── Render AI analysis ──
+    document.addEventListener('htmx:afterOnLoad',function(evt){
+        if(evt.detail.target.id!=='digest-analysis-loaded')return;
+        try{var ai=JSON.parse(evt.detail.xhr.responseText);renderAnalysis(ai);}catch(e){}
+    });
+    function renderAnalysis(ai){
+        var c=document.getElementById('digest-analysis-loaded');
+        var h='<div class="card animate-in">';
+        h+='<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1.1rem;"><span class="section-title" style="margin-bottom:0;">AI 今日事务分析</span><span style="font-size:0.62rem;padding:0.12rem 0.45rem;border-radius:999px;background:#EEF2FF;color:#6366F1;font-weight:500;">nga</span></div>';
+
+        // Topics
+        if(ai.topics&&ai.topics.length>0){
+            var tc=['#EEF2FF','#F0F9FF','#ECFDF5','#FFF7ED','#FEF2F2','#F5F3FF'];
+            h+='<div style="margin-bottom:1.3rem;"><div style="font-size:0.7rem;font-weight:600;color:#64748B;margin-bottom:0.6rem;letter-spacing:0.03em;">今日话题</div><div style="display:flex;flex-wrap:wrap;gap:0.45rem;">';
+            ai.topics.forEach(function(t,i){
+                var bg=tc[i%tc.length];
+                h+='<span onclick="showDetailModal(\''+escHtml(t.title)+'\',\'涉及 '+t.group_count+' 个群 &middot; '+t.message_count+' 条消息\',\'<p>'+escHtml(t.summary||'')+'</p>\')" style="background:'+bg+';color:#334155;padding:0.35rem 0.6rem 0.35rem 0.8rem;border-radius:20px;font-size:0.78rem;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:0.4rem;" onmouseover="this.style.transform=\'translateY(-1px)\';this.style.boxShadow=\'0 2px 6px rgba(0,0,0,0.06)\'" onmouseout="this.style.transform=\'none\';this.style.boxShadow=\'none\'">'+escHtml(t.title)+'<span style="background:#FFF;color:#64748B;font-size:0.65rem;font-weight:600;min-width:18px;height:18px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;">'+t.message_count+'</span></span>';
+            });
+            h+='</div></div>';
+        }
+
+        // Divider
+        if(ai.topics&&ai.topics.length>0&&ai.unclosed&&ai.unclosed.length>0){
+            h+='<div style="border-top:1px solid #E2E8F0;margin:1.25rem 0;"></div>';
+        }
+
+        // Unclosed
+        if(ai.unclosed&&ai.unclosed.length>0){
+            h+='<div><div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;"><span style="width:6px;height:6px;border-radius:50%;background:#F87171;"></span><span style="font-size:0.7rem;font-weight:600;color:#DC2626;letter-spacing:0.03em;">未闭环事务</span><span style="font-size:0.65rem;padding:0.12rem 0.45rem;border-radius:999px;background:#FEF2F2;color:#DC2626;font-weight:500;">'+ai.unclosed.length+'</span></div>';
+            ai.unclosed.forEach(function(item,idx){
+                var rc={'高':['#FEF2F2','#DC2626'],'中':['#FFFBEB','#D97706'],'低':['#ECFDF5','#059669']}[item.risk]||['#F8FAFC','#64748B'];
+                var tid='task-'+idx;
+                h+='<div id="'+tid+'" style="display:flex;align-items:flex-start;gap:0.75rem;background:#F8FAFC;border-radius:12px;padding:0.85rem 0.9rem;margin-bottom:0.45rem;transition:all 0.15s;position:relative;" onmouseover="this.style.background=\'#FFF\';this.style.boxShadow=\'0 2px 8px rgba(0,0,0,0.05)\';var b=this.querySelector(\'.task-actions\');if(b)b.style.opacity=\'1\'" onmouseout="this.style.background=\'#F8FAFC\';this.style.boxShadow=\'none\';var b=this.querySelector(\'.task-actions\');if(b)b.style.opacity=\'0\'">'+
+                '<div style="width:30px;height:30px;border-radius:8px;background:'+rc[0]+';color:'+rc[1]+';display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;">'+item.risk+'</div>'+
+                '<div style="min-width:0;flex:1;">'+
+                '<div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.25rem;"><span style="font-size:0.82rem;font-weight:600;color:#1E293B;">'+escHtml(item.title)+'</span><span style="font-size:0.62rem;padding:0.1rem 0.4rem;border-radius:20px;background:#F1F5F9;color:#64748B;font-weight:500;white-space:nowrap;">'+escHtml(item.source_group||'')+'</span></div>'+
+                '<p style="font-size:0.75rem;color:#64748B;line-height:1.5;margin:0;">'+escHtml(item.detail||'')+'</p>'+
+                (item.key_person&&item.key_person!=='待确认'?'<div style="margin-top:0.35rem;font-size:0.68rem;color:#94A3B8;">关键人 <span style="color:#475569;font-weight:500;">'+escHtml(item.key_person)+'</span></div>':'')+
+                '</div>'+
+                '<div class="task-actions" style="display:flex;gap:0.35rem;opacity:0;transition:opacity 0.15s;flex-shrink:0;align-self:center;">'+
+                '<button onclick="event.stopPropagation();markTaskDone(\''+tid+'\')" style="background:#ECFDF5;color:#059669;border:none;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.7rem;cursor:pointer;font-weight:500;white-space:nowrap;">已处理</button>'+
+                '<button onclick="event.stopPropagation();dismissTask(\''+tid+'\')" style="background:#F1F5F9;color:#94A3B8;border:none;padding:0.3rem 0.55rem;border-radius:6px;font-size:0.7rem;cursor:pointer;font-weight:500;">忽略</button></div></div>';
+            });
+            h+='</div>';
+        }
+
+        // Closed
+        if(ai.closed&&ai.closed.length>0){
+            h+='<div style="margin-top:1rem;"><div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;"><span style="width:6px;height:6px;border-radius:50%;background:#34D399;"></span><span style="font-size:0.7rem;font-weight:600;color:#059669;letter-spacing:0.03em;">已闭环</span><span style="font-size:0.65rem;padding:0.12rem 0.45rem;border-radius:999px;background:#ECFDF5;color:#059669;font-weight:500;">'+ai.closed.length+'</span></div>';
+            ai.closed.forEach(function(item){
+                h+='<div onclick="showDetailModal(\''+escHtml(item.title)+'\',\''+escHtml(item.source_group||'')+'\',\'<p>'+escHtml(item.conclusion||'')+'</p>\')" style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.6rem;border-radius:8px;font-size:0.78rem;color:#475569;cursor:pointer;transition:background 0.12s;" onmouseover="this.style.background=\'#F8FAFC\'" onmouseout="this.style.background=\'transparent\'"><span style="color:#34D399;font-weight:700;">&check;</span><span style="flex:1;">'+escHtml(item.title)+'</span><span style="color:#94A3B8;font-size:0.68rem;">'+escHtml(item.source_group||'')+'</span></div>';
+            });
+            h+='</div>';
+        }
+
+        if((!ai.topics||ai.topics.length===0)&&(!ai.unclosed||ai.unclosed.length===0)&&(!ai.closed||ai.closed.length===0)){
+            h+='<div style="text-align:center;padding:1.5rem;color:#94A3B8;">AI 分析暂未生成</div>';
+        }
+        h+='</div>';
+        c.innerHTML=h;
+    }
+    </script>
+</body>
+</html>

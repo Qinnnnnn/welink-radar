@@ -27,6 +27,7 @@ import routes.rescan as rescan_routes
 import routes.new_messages as new_messages_routes
 import routes.recover as recover_routes
 import routes.daemon as daemon_routes
+import routes.digest as digest_routes
 
 app = FastAPI(
     title="WeLink Radar",
@@ -61,6 +62,7 @@ app.include_router(rescan_routes.router)
 app.include_router(new_messages_routes.router)
 app.include_router(recover_routes.router)
 app.include_router(daemon_routes.router)
+app.include_router(digest_routes.router)
 
 # ── Page Routes ───────────────────────────────────────────────────────────────
 
@@ -77,7 +79,12 @@ async def page_dashboard(request: Request):
 @app.get("/setup", response_class=HTMLResponse)
 async def page_setup(request: Request):
     """Setup wizard page."""
-    return templates.TemplateResponse("pages/setup.html", {"request": request})
+    from core.config import config_status
+    status = config_status()
+    return templates.TemplateResponse("pages/setup.html", {
+        "request": request,
+        "env_checks": status.get("env_checks", {}),
+    })
 
 
 @app.get("/groups", response_class=HTMLResponse)
@@ -143,6 +150,15 @@ async def page_report(request: Request, conv_id: str):
         return RedirectResponse(url="/setup")
     return templates.TemplateResponse("pages/report.html",
                                        {"request": request, "config": config, "conv_id": conv_id})
+
+
+@app.get("/digest", response_class=HTMLResponse)
+async def page_digest(request: Request):
+    """Daily digest page — primary message overview."""
+    config = read_config()
+    if not config.setupCompleted:
+        return RedirectResponse(url="/setup")
+    return templates.TemplateResponse("pages/digest.html", {"request": request, "config": config})
 
 
 @app.get("/signals", response_class=HTMLResponse)
