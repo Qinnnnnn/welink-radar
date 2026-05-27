@@ -56,6 +56,19 @@ async def api_analysis(date: str = Query(default="", description="YYYY-MM-DD, de
     return await _run_ai_analysis(collected)
 
 
+@router.post("/sync")
+async def api_sync(date: str = Query(default="", description="YYYY-MM-DD to sync")):
+    """Trigger message sync for the given date via welink-cli.
+
+    In mock mode, returns success immediately (data is pre-generated).
+    In production, this would call welink-cli to fetch real messages.
+    """
+    d = date or _today_utc()
+    # Trigger collection (this fetches from welink-cli in production)
+    await _collect_all_messages(d)
+    return {"ok": True, "date": d, "synced": True}
+
+
 @router.get("/unclosed")
 async def api_unclosed(date: str = Query(default="", description="YYYY-MM-DD, default today UTC")):
     """Return only the unclosed items."""

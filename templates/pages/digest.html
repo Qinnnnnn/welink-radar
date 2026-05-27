@@ -42,7 +42,15 @@
             <a href="/digest" class="topbar-root">WeLink Radar</a>
             <span class="topbar-sep">/</span>
             <span class="topbar-current">每日摘要</span>
-            <span style="margin-left:auto;font-size:0.78rem;color:var(--muted);" id="digest-date"></span>
+            <span style="margin-left:auto;display:flex;align-items:center;gap:0.5rem;">
+                <input type="date" id="sync-date" class="setup-input"
+                       style="width:auto;height:32px;font-size:0.78rem;padding:0 0.5rem;border-radius:6px;"
+                       onchange="changeDate(this.value)">
+                <button onclick="syncDate(this)" class="setup-btn"
+                        style="height:32px;font-size:0.75rem;padding:0 0.8rem;min-width:auto;border-radius:6px;">
+                    同步
+                </button>
+            </span>
         </div>
 
         <div class="content" id="digest-content">
@@ -74,6 +82,33 @@
     document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
 
     function escHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+    // ── Date picker & sync ──
+    function changeDate(d) {
+        var ov=document.getElementById('digest-overview-area');
+        var al=document.getElementById('digest-analysis-loaded');
+        ov.setAttribute('hx-get','/api/digest/overview?date='+d);
+        al.setAttribute('hx-get','/api/digest/analysis?date='+d);
+        htmx.trigger(ov,'load');
+        htmx.trigger(al,'load');
+    }
+    function syncDate(btn) {
+        var d=document.getElementById('sync-date').value;
+        btn.disabled=true; btn.textContent='...';
+        fetch('/api/digest/sync?date='+d,{method:'POST'}).then(function(r){
+            return r.json();
+        }).then(function(){
+            btn.textContent='同步'; btn.disabled=false;
+            changeDate(d);
+        }).catch(function(){
+            btn.textContent='同步'; btn.disabled=false;
+        });
+    }
+    // Init date picker to today
+    document.addEventListener('DOMContentLoaded',function(){
+        var today=new Date().toISOString().split('T')[0];
+        document.getElementById('sync-date').value=today;
+    });
 
     function buildStatCard(label,value,color){
         return '<div class="digest-stat-card"><div style="font-size:2.25rem;font-weight:700;color:'+color+';letter-spacing:-0.03em;line-height:1;">'+value+'</div><div style="font-size:0.75rem;color:#94A3B8;margin-top:0.4rem;font-weight:500;">'+label+'</div></div>';
@@ -121,7 +156,7 @@
     function renderOverview(data){
         var c=document.getElementById('digest-overview-area');
         var ov=data.overview||{},att=data.attention||{};
-        document.getElementById('digest-date').textContent=data.date||'';
+        document.getElementById('sync-date').value=data.date||'';
         var h='<div class="digest-metrics-sticky">';
         h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-bottom:1.5rem;" class="animate-in">';
         h+=buildStatCard('私聊会话',ov.private_chats||0,'#5B6AF0');
