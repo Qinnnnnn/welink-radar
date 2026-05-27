@@ -19,14 +19,20 @@
         }
         .status-tag.ready::before { background:#10B981; }
         .status-tag.missing::before { background:#EF4444; }
-        .setup-divider { border:none; border-top:1px solid #F1F5F9; margin:1.75rem 0; }
+        .setup-divider { border:none; border-top:1px solid #F1F5F9; margin:1.5rem 0 1.25rem 0; }
         .setup-input {
-            background:#FFF; border:1px solid #E2E8F0; border-radius:8px;
-            padding:0.55rem 0.8rem; font-size:0.85rem; color:var(--text);
-            width:100%; outline:none; transition:border-color 0.15s;
+            background:#FFF; border:1px solid #CBD5E1; border-radius:6px;
+            height:38px; padding:0 0.7rem; font-size:0.84rem; color:var(--text);
+            width:100%; outline:none; transition:border-color 0.15s,box-shadow 0.15s;
         }
         .setup-input:focus { border-color:#5B6AF0; box-shadow:0 0 0 3px rgba(91,106,240,0.1); }
         .setup-input::placeholder { color:#94A3B8; }
+        .setup-btn {
+            height:38px; padding:0 1.2rem; border-radius:6px; font-weight:500;
+            font-size:0.85rem; cursor:pointer; border:none; transition:background 0.15s;
+            background:var(--accent); color:#FFF; min-width:110px;
+        }
+        .setup-btn:hover { background:var(--accent-hover); }
     </style>
 </head>
 <body>
@@ -43,14 +49,14 @@
                 <div class="card">
 
                     <div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:0.75rem;">运行环境</div>
-                    <div style="display:flex;align-items:center;gap:2rem;">
-                        <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.81rem;">
+                    <div style="display:flex;align-items:center;gap:2.5rem;">
+                        <div style="display:flex;align-items:center;gap:0.35rem;font-size:0.81rem;">
                             <span style="color:var(--text);">welink-cli</span>
                             <span class="status-tag {{ 'ready' if env_checks.welink_cli_available else 'missing' }}">
                                 {{ '已就绪' if env_checks.welink_cli_available else '未安装' }}
                             </span>
                         </div>
-                        <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.81rem;">
+                        <div style="display:flex;align-items:center;gap:0.35rem;font-size:0.81rem;">
                             <span style="color:var(--text);">nga</span>
                             <span class="status-tag {{ 'ready' if env_checks.nga_available else 'missing' }}">
                                 {{ '已就绪' if env_checks.nga_available else '未安装' }}
@@ -61,14 +67,14 @@
                     <hr class="setup-divider">
 
                     <form hx-post="/api/setup" hx-swap="outerHTML" style="max-width:440px;">
-                        <label style="display:block;font-size:0.82rem;font-weight:500;color:var(--text);margin-bottom:0.55rem;">
+                        <label style="display:block;font-size:0.82rem;font-weight:500;color:var(--text);margin-bottom:0.45rem;">
                             WeLink 短工号
                         </label>
                         <input name="myNicknames" type="text" class="setup-input" placeholder="例如 q00510847">
-                        <p style="font-size:0.72rem;color:var(--muted);margin-top:0.55rem;">
+                        <p style="font-size:0.7rem;color:var(--muted);margin-top:0.35rem;">
                             用于匹配群聊及私聊中提及你的消息
                         </p>
-                        <button type="submit" class="btn btn-primary" style="margin-top:1.75rem;width:auto;min-width:110px;">完成配置</button>
+                        <button type="submit" class="setup-btn" style="margin-top:1.5rem;">完成配置</button>
                     </form>
 
                 </div>
