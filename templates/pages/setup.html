@@ -7,10 +7,10 @@
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     {% include "components/shared_layout.html" %}
     <style>
-        .setup-panel { max-width:640px; }
+        .setup-panel { max-width:600px; }
         .status-tag {
             font-size:0.7rem; font-weight:500; padding:0.1rem 0.5rem; border-radius:10px;
-            display:inline-flex; align-items:center; gap:0.3rem;
+            display:inline-flex; align-items:center; gap:0.25rem;
         }
         .status-tag.ready { background:#ECFDF5; color:#10B981; }
         .status-tag.missing { background:#FEF2F2; color:#EF4444; }
@@ -19,8 +19,14 @@
         }
         .status-tag.ready::before { background:#10B981; }
         .status-tag.missing::before { background:#EF4444; }
-        .setup-divider { border:none; border-top:1px solid #F1F5F9; margin:1.5rem 0; }
-        .setup-form-row { max-width:440px; }
+        .setup-divider { border:none; border-top:1px solid #F1F5F9; margin:1.75rem 0; }
+        .setup-input {
+            background:#FFF; border:1px solid #E2E8F0; border-radius:8px;
+            padding:0.55rem 0.8rem; font-size:0.85rem; color:var(--text);
+            width:100%; outline:none; transition:border-color 0.15s;
+        }
+        .setup-input:focus { border-color:#5B6AF0; box-shadow:0 0 0 3px rgba(91,106,240,0.1); }
+        .setup-input::placeholder { color:#94A3B8; }
     </style>
 </head>
 <body>
@@ -36,16 +42,15 @@
             <div class="setup-panel">
                 <div class="card">
 
-                    <!-- Environment status -->
-                    <div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:0.85rem;">运行环境</div>
-                    <div style="display:flex;align-items:center;gap:1.5rem;">
-                        <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;">
+                    <div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:0.75rem;">运行环境</div>
+                    <div style="display:flex;align-items:center;gap:2rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.81rem;">
                             <span style="color:var(--text);">welink-cli</span>
                             <span class="status-tag {{ 'ready' if env_checks.welink_cli_available else 'missing' }}">
                                 {{ '已就绪' if env_checks.welink_cli_available else '未安装' }}
                             </span>
                         </div>
-                        <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.81rem;">
                             <span style="color:var(--text);">nga</span>
                             <span class="status-tag {{ 'ready' if env_checks.nga_available else 'missing' }}">
                                 {{ '已就绪' if env_checks.nga_available else '未安装' }}
@@ -55,18 +60,15 @@
 
                     <hr class="setup-divider">
 
-                    <!-- Short ID form -->
-                    <form hx-post="/api/setup" hx-swap="outerHTML" class="setup-form-row">
-                        <div style="margin-bottom:1rem;">
-                            <label style="display:block;font-size:0.82rem;font-weight:500;color:var(--text);margin-bottom:0.4rem;">
-                                WeLink 短工号
-                            </label>
-                            <input name="myNicknames" type="text" placeholder="例如 q00510847">
-                            <p style="font-size:0.72rem;color:var(--muted);margin-top:0.35rem;">
-                                用于匹配群聊及私聊中提及你的消息
-                            </p>
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="width:auto;min-width:110px;">完成配置</button>
+                    <form hx-post="/api/setup" hx-swap="outerHTML" style="max-width:440px;">
+                        <label style="display:block;font-size:0.82rem;font-weight:500;color:var(--text);margin-bottom:0.55rem;">
+                            WeLink 短工号
+                        </label>
+                        <input name="myNicknames" type="text" class="setup-input" placeholder="例如 q00510847">
+                        <p style="font-size:0.72rem;color:var(--muted);margin-top:0.55rem;">
+                            用于匹配群聊及私聊中提及你的消息
+                        </p>
+                        <button type="submit" class="btn btn-primary" style="margin-top:1.75rem;width:auto;min-width:110px;">完成配置</button>
                     </form>
 
                 </div>
