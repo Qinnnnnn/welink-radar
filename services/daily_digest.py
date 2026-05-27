@@ -10,7 +10,7 @@ _MOCK_ENABLED = False in each client to switch to real CLI.
 
 import json
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
 
 from clients.welink import get_sessions, get_history_messages
@@ -24,11 +24,11 @@ _MY_ACCOUNT = "q00510847"  # Current user's welink account
 
 
 def _today_utc() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return datetime.now().strftime("%Y-%m-%d")
 
 
 def _ts_to_time(ms: int) -> str:
-    return datetime.fromtimestamp(ms / 1000, tz=timezone.utc).strftime("%H:%M")
+    return datetime.fromtimestamp(ms / 1000).strftime("%H:%M")
 
 
 # ── Message collection ─────────────────────────────────────────────────────────
