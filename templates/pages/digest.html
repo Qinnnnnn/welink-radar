@@ -67,29 +67,27 @@
             <a href="/digest" class="topbar-root">WeLink Radar</a>
             <span class="topbar-sep">/</span>
             <span class="topbar-current">每日摘要</span>
-            <span style="margin-left:auto;display:flex;align-items:center;gap:0.5rem;">
-                <div class="datepicker-trigger-bar">
-                    <div class="input-with-icon" onclick="toggleDatepicker()">
-                        <input type="text" id="sync-date-text" class="datepicker-input" value="" readonly />
+            <div style="margin-left:auto;display:flex;align-items:center;gap:0.5rem;" class="datepicker-trigger-bar">
+                <div class="input-with-icon" onclick="toggleDatepicker()">
+                    <input type="text" id="sync-date-text" class="datepicker-input" value="" readonly />
+                </div>
+                <button class="btn-sync" onclick="syncDate(this)">同步</button>
+                <div class="datepicker-popover" id="datepicker-popover" style="display:none;">
+                    <div class="datepicker-header">
+                        <span class="current-month" id="dp-month-label"></span>
+                        <div class="header-arrows">
+                            <button class="arrow-btn" onclick="dpNav(-1);event.stopPropagation();">&lsaquo;</button>
+                            <button class="arrow-btn" onclick="dpNav(1);event.stopPropagation();">&rsaquo;</button>
+                        </div>
                     </div>
-                    <button class="btn-sync" onclick="syncDate(this)">同步</button>
-                    <div class="datepicker-popover" id="datepicker-popover" style="display:none;">
-                        <div class="datepicker-header">
-                            <span class="current-month" id="dp-month-label"></span>
-                            <div class="header-arrows">
-                                <button class="arrow-btn" onclick="dpNav(-1);event.stopPropagation();">&lsaquo;</button>
-                                <button class="arrow-btn" onclick="dpNav(1);event.stopPropagation();">&rsaquo;</button>
-                            </div>
-                        </div>
-                        <div class="datepicker-weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
-                        <div class="datepicker-days-grid" id="dp-days"></div>
-                        <div class="datepicker-footer">
-                            <button class="footer-action-btn btn-clear" onclick="dpClear();event.stopPropagation();">清除</button>
-                            <button class="footer-action-btn btn-today" onclick="dpToday();event.stopPropagation();">今天</button>
-                        </div>
+                    <div class="datepicker-weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+                    <div class="datepicker-days-grid" id="dp-days"></div>
+                    <div class="datepicker-footer">
+                        <button class="footer-action-btn btn-clear" onclick="dpClear();event.stopPropagation();">清除</button>
+                        <button class="footer-action-btn btn-today" onclick="dpToday();event.stopPropagation();">今天</button>
                     </div>
                 </div>
-            </span>
+            </div>
         </div>
 
         <div class="content" id="digest-content">
