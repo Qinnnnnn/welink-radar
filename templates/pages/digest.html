@@ -109,17 +109,6 @@
         });
     }
 
-    function markTaskDone(id){
-        var el=document.getElementById(id);if(!el)return;
-        el.style.opacity='0.5';el.style.textDecoration='line-through';el.style.transition='all 0.3s';
-        el.querySelector('.task-actions').innerHTML='<span style="color:#059669;font-size:0.72rem;font-weight:500;">已处理</span>';
-    }
-    function dismissTask(id){
-        var el=document.getElementById(id);if(!el)return;
-        el.style.opacity='0';el.style.transform='translateX(24px)';el.style.transition='all 0.3s';
-        setTimeout(function(){el.style.display='none';},300);
-    }
-
     // ── Render overview ──
     document.addEventListener('htmx:afterOnLoad',function(evt){
         if(evt.detail.target.id!=='digest-overview-area')return;
@@ -182,19 +171,15 @@
         // Unclosed
         if(ai.unclosed&&ai.unclosed.length>0){
             h+='<div><div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;"><span style="width:6px;height:6px;border-radius:50%;background:#F87171;"></span><span style="font-size:0.7rem;font-weight:600;color:#DC2626;letter-spacing:0.03em;">未闭环事务</span><span style="font-size:0.65rem;padding:0.12rem 0.45rem;border-radius:999px;background:#FEF2F2;color:#DC2626;font-weight:500;">'+ai.unclosed.length+'</span></div>';
-            ai.unclosed.forEach(function(item,idx){
+            ai.unclosed.forEach(function(item){
                 var rc={'高':['#FEF2F2','#DC2626'],'中':['#FFFBEB','#D97706'],'低':['#ECFDF5','#059669']}[item.risk]||['#F8FAFC','#64748B'];
-                var tid='task-'+idx;
-                h+='<div id="'+tid+'" style="display:flex;align-items:flex-start;gap:0.75rem;background:#F8FAFC;border-radius:12px;padding:0.85rem 0.9rem;margin-bottom:0.45rem;transition:all 0.15s;position:relative;" onmouseover="this.style.background=\'#FFF\';this.style.boxShadow=\'0 2px 8px rgba(0,0,0,0.05)\';var b=this.querySelector(\'.task-actions\');if(b)b.style.opacity=\'1\'" onmouseout="this.style.background=\'#F8FAFC\';this.style.boxShadow=\'none\';var b=this.querySelector(\'.task-actions\');if(b)b.style.opacity=\'0\'">'+
+                h+='<div style="display:flex;align-items:flex-start;gap:0.75rem;background:#F8FAFC;border-radius:12px;padding:0.85rem 0.9rem;margin-bottom:0.45rem;transition:all 0.15s;" onmouseover="this.style.background=\'#FFF\';this.style.boxShadow=\'0 2px 8px rgba(0,0,0,0.05)\'" onmouseout="this.style.background=\'#F8FAFC\';this.style.boxShadow=\'none\'">'+
                 '<div style="width:30px;height:30px;border-radius:8px;background:'+rc[0]+';color:'+rc[1]+';display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;">'+item.risk+'</div>'+
                 '<div style="min-width:0;flex:1;">'+
                 '<div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.25rem;"><span style="font-size:0.82rem;font-weight:600;color:#1E293B;">'+escHtml(item.title)+'</span><span style="font-size:0.62rem;padding:0.1rem 0.4rem;border-radius:20px;background:#F1F5F9;color:#64748B;font-weight:500;white-space:nowrap;">'+escHtml(item.source_group||'')+'</span></div>'+
                 '<p style="font-size:0.75rem;color:#64748B;line-height:1.5;margin:0;">'+escHtml(item.detail||'')+'</p>'+
                 (item.key_person&&item.key_person!=='待确认'?'<div style="margin-top:0.35rem;font-size:0.68rem;color:#94A3B8;">关键人 <span style="color:#475569;font-weight:500;">'+escHtml(item.key_person)+'</span></div>':'')+
-                '</div>'+
-                '<div class="task-actions" style="display:flex;gap:0.35rem;opacity:0;transition:opacity 0.15s;flex-shrink:0;align-self:center;">'+
-                '<button onclick="event.stopPropagation();markTaskDone(\''+tid+'\')" style="background:#ECFDF5;color:#059669;border:none;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.7rem;cursor:pointer;font-weight:500;white-space:nowrap;">已处理</button>'+
-                '<button onclick="event.stopPropagation();dismissTask(\''+tid+'\')" style="background:#F1F5F9;color:#94A3B8;border:none;padding:0.3rem 0.55rem;border-radius:6px;font-size:0.7rem;cursor:pointer;font-weight:500;">忽略</button></div></div>';
+                '</div></div>';
             });
             h+='</div>';
         }
