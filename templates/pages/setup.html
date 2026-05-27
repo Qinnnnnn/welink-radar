@@ -6,6 +6,22 @@
     <title>WeLink Radar · 设置</title>
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     {% include "components/shared_layout.html" %}
+    <style>
+        .setup-panel { max-width:640px; }
+        .status-tag {
+            font-size:0.7rem; font-weight:500; padding:0.1rem 0.5rem; border-radius:10px;
+            display:inline-flex; align-items:center; gap:0.3rem;
+        }
+        .status-tag.ready { background:#ECFDF5; color:#10B981; }
+        .status-tag.missing { background:#FEF2F2; color:#EF4444; }
+        .status-tag::before {
+            content:''; width:5px; height:5px; border-radius:50%;
+        }
+        .status-tag.ready::before { background:#10B981; }
+        .status-tag.missing::before { background:#EF4444; }
+        .setup-divider { border:none; border-top:1px solid #F1F5F9; margin:1.5rem 0; }
+        .setup-form-row { max-width:440px; }
+    </style>
 </head>
 <body>
     {% with page="setup" %}{% include "components/sidebar_minimal.html" %}{% endwith %}
@@ -16,42 +32,44 @@
             <span class="topbar-sep">/</span>
             <span class="topbar-current">设置</span>
         </div>
-        <div class="content" style="display:flex;align-items:center;justify-content:center;">
-            <div style="width: 440px; max-width: 100%;">
+        <div class="content">
+            <div class="setup-panel">
+                <div class="card">
 
-                <div class="card" style="margin-bottom: 1rem;">
-                    <div style="font-size:0.8rem;font-weight:600;color:var(--text);margin-bottom:0.85rem;">运行环境</div>
-                    <div style="display:flex;flex-direction:column;gap:0.6rem;">
-                        <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;">
-                            <span style="width:7px;height:7px;border-radius:50%;background:{{ '#22A699' if env_checks.welink_cli_available else '#E85D5D' }};flex-shrink:0;"></span>
+                    <!-- Environment status -->
+                    <div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:0.85rem;">运行环境</div>
+                    <div style="display:flex;align-items:center;gap:1.5rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;">
                             <span style="color:var(--text);">welink-cli</span>
-                            <span style="margin-left:auto;font-size:0.78rem;color:{{ '#22A699' if env_checks.welink_cli_available else '#E85D5D' }};">
-                                {{ '已安装' if env_checks.welink_cli_available else '未安装' }}
+                            <span class="status-tag {{ 'ready' if env_checks.welink_cli_available else 'missing' }}">
+                                {{ '已就绪' if env_checks.welink_cli_available else '未安装' }}
                             </span>
                         </div>
-                        <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;">
-                            <span style="width:7px;height:7px;border-radius:50%;background:{{ '#22A699' if env_checks.nga_available else '#E85D5D' }};flex-shrink:0;"></span>
+                        <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;">
                             <span style="color:var(--text);">nga</span>
-                            <span style="margin-left:auto;font-size:0.78rem;color:{{ '#22A699' if env_checks.nga_available else '#E85D5D' }};">
-                                {{ '已安装' if env_checks.nga_available else '未安装' }}
+                            <span class="status-tag {{ 'ready' if env_checks.nga_available else 'missing' }}">
+                                {{ '已就绪' if env_checks.nga_available else '未安装' }}
                             </span>
                         </div>
                     </div>
+
+                    <hr class="setup-divider">
+
+                    <!-- Short ID form -->
+                    <form hx-post="/api/setup" hx-swap="outerHTML" class="setup-form-row">
+                        <div style="margin-bottom:1rem;">
+                            <label style="display:block;font-size:0.82rem;font-weight:500;color:var(--text);margin-bottom:0.4rem;">
+                                WeLink 短工号
+                            </label>
+                            <input name="myNicknames" type="text" placeholder="例如 q00510847">
+                            <p style="font-size:0.72rem;color:var(--muted);margin-top:0.35rem;">
+                                用于匹配群聊及私聊中提及你的消息
+                            </p>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:auto;min-width:110px;">完成配置</button>
+                    </form>
+
                 </div>
-
-                <form hx-post="/api/setup" hx-swap="outerHTML" class="card" style="display:flex;flex-direction:column;gap:1.1rem;">
-                    <div>
-                        <label style="display:block;font-size:0.82rem;font-weight:500;color:var(--text);margin-bottom:0.45rem;">
-                            WeLink 短工号
-                        </label>
-                        <input name="myNicknames" type="text" placeholder="例如 q00510847">
-                        <p style="font-size:0.72rem;color:var(--muted);margin-top:0.4rem;">
-                            用于匹配群聊及私聊中提及你的消息
-                        </p>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%;">完成配置</button>
-                </form>
-
             </div>
         </div>
     </div>
